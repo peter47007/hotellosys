@@ -1,0 +1,7 @@
+{
+  "name": "HotelloSys - Enterprise Hotel Management",
+  "description": "A comprehensive, modular hotel management system featuring room reservations, restaurant/bar POS, inventory tracking, employee management, and AI-driven analytics.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

@@ -1,0 +1,14 @@
+BuHoMaS: Postgres: Agent47007@*@###
+
+1. There is a point just came to my mind. Because the system has three modules, is it possible for the buyer to purchase one or just two modules? Which means that, when installing, only that purchased module, for example only Rooms Reservation module is active for installation and others are inactive or disabled on checkboxes. How is this can be done, please explain and if possible, update it in my documents.
+
+2. Another one is that, I think a software must have LICENSE (LICESE Key 🗝, OR LICENSE ID 🆔) to control user installation (ONE KEY 🗝 or ID 🆔 PER PC Installation). Employees from Bar and Restaurant can view and book available rooms for customers.
+
+MOBILE APP:
+3. Another thing is that, customers will make room reservations using a mobile app. A room reservation must have a non-refundable down-payment, the customer will hold that room for a certain amount of hours (there will be a countdown timer for each reserved room) from the time of payment of the down-payment. After the time elapses, then the room is available for booking.
+
+4. I think there is a need to have a mobile app for both iOS and Android that will enable customers to see the rooms, their type/standard, their features, their pictures, and make room reservations. These room details will be synced and pulled from the installed desktop app at the hotel, and the desktop app will be having notification feature and mechanism that will notify and alert the employee about the customer reservations.
+
+5. The mobile app will be syncing with all the HotelloSys installed hotels, and the customer will browse hotels and choose. This mobile app will have list of various hotels installed with HotelloSys, will not be owned by any hotel, customers will be browsing and seeing hotels that have HotelloSys installed.
+
+6. Customers will see their profiles and their corresponding loyalty points for each hotel. One customer profile, multiple hotel loyalty points. They will see their points once they click or select a hotel. Customers can rate hotels by stars 1-5, and hotels will be ranked in the mobile app using these ratings.
