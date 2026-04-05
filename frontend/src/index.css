@@ -1,0 +1,57 @@
+/* C:\Users\Admin\OneDrive\Desktop\BuyzaProject\hotellosys\src\index.css */
+
+   /* Global styles for the hotel management system dashboard application.
+    This file includes base styles, typography, and layout settings to ensure a consistent look and feel across the entire application.
+    */
+
+        @import "tailwindcss";
+    
+        /* Configuration for Tailwind v4 */
+        @theme {
+            --color-brand: #004aad;
+            --font-inter: "Inter", sans-serif;
+        }
+    
+        @layer base {
+            body {
+                @apply font-inter bg-slate-50 text-slate-900 overflow-hidden;
+            }
+        }
+    
+        @layer utilities {
+    
+            /* Custom Scrollbar Logic */
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
+            }
+    
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+    
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 10px;
+            }
+    
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+    
+            /* Background Animation */
+            @keyframes gradient-xy {
+    
+                0%,
+                100% {
+                    background-position: 0% 50%;
+                }
+    
+                50% {
+                    background-position: 100% 50%;
+                }
+            }
+    
+            .animate-gradient-xy {
+                background-size: 200% 200%;
+                animation: gradient-xy 5s ease infinite;
+            }   }

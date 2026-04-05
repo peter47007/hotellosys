@@ -1,0 +1,9 @@
+CREATE TABLE LanguageSettings (
+    LanguageSettingID SERIAL PRIMARY KEY,
+    HotelID INT NOT NULL REFERENCES Hotels(HotelID) ON DELETE CASCADE,
+    LanguageCode VARCHAR(10) NOT NULL,
+    LanguageName VARCHAR(50),
+    IsDefault BOOLEAN DEFAULT FALSE,
+    IsActive BOOLEAN DEFAULT TRUE,
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,0 +1,5 @@
+HotelloSys developing rules:
+    1. Provide full paths.
+    2. Provide full codes
+    3. No assumption, and no guessing. If you are not sure, ask me and I will give you the full file (full code).
+    5. When the system is working perfectly, and it is stable, we do not want to break or mess things up, we are moving slowly but sure, step-by-step when fixing, or updating, or upgrading, or adding new features or anything.

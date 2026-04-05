@@ -1,0 +1,604 @@
+// C:\Users\Admin\OneDrive\Desktop\BuyzaProject\hotellosys\prisma\schema.prisma
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------
+// 1. CORE TABLES
+// ---------------------------------------------------------
+
+model Hotels {
+  hotelId                Int                    @id @default(autoincrement())
+  hotelName              String                 @unique
+  address                String?
+  city                   String?
+  country                String?
+  postalCode             String?
+  phoneNumber            String?
+  email                  String?
+  website                String?
+  registrationNumber     String?
+  taxId                  String?
+  subscriptionType       String?                // 'Basic', 'Premium'
+  subscriptionStartDate  DateTime?
+  subscriptionEndDate    DateTime?
+  defaultCurrency        String?                @default("USD")
+  defaultLanguage        String?                @default("en")
+  isActive               Boolean?               @default(true)
+  createdDate            DateTime?              @default(now())
+  createdBy              Int?
+  modifiedDate           DateTime?              @updatedAt
+  modifiedBy             Int?
+
+  // Relations
+  employees              Employees[]
+  departments            Departments[]
+  roles                  Roles[]
+  roomTypes              RoomTypes[]
+  rooms                  Rooms[]
+  reservations           Reservations[]
+  menuCategories         MenuCategories[]
+  menuItems              MenuItems[]
+  orders                 Orders[]
+  inventoryCategories    InventoryCategories[]
+  suppliers              Suppliers[]
+  inventoryItems         InventoryItems[]
+  inventoryTransactions  InventoryTransactions[]
+  invoices               Invoices[]
+  payments               Payments[]
+  customers              Customers[]
+  loyaltyPoints          LoyaltyPoints[]
+  auditLogs              AuditLogs[]
+  hotelSettings          HotelSettings[]
+  printerConfigurations  PrinterConfiguration[]
+  languageSettings       LanguageSettings[]
+}
+
+model Employees {
+  employeeId        Int           @id @default(autoincrement())
+  hotelId           Int
+  hotel             Hotels        @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  firstName         String
+  lastName          String
+  email             String?
+  phoneNumber       String?
+  departmentId      Int
+  department        Departments   @relation("EmployeeDepartment", fields: [departmentId], references: [departmentId])
+  roleId            Int
+  role              Roles         @relation(fields: [roleId], references: [roleId])
+  title             String?
+  gender            String?
+  dateOfBirth       DateTime?
+  nationalIdNumber  String?
+  joinDate          DateTime
+  endDate           DateTime?
+  photoPath         String?
+  username          String        @unique
+  passwordHash      String
+  isActive          Boolean?      @default(true)
+  lastLoginDate     DateTime?
+  createdDate      	DateTime?     @default(now())
+  createdBy         Int?
+  modifiedDate      DateTime?     @updatedAt
+  modifiedBy        Int?
+
+  // Inverse Relations
+  managedDepartments    Departments[] @relation("DepartmentManager")
+  bookedReservations    Reservations[]
+  createdOrders         Orders[]
+  inventoryTransactions InventoryTransactions[]
+  createdInvoices       Invoices[]
+  receivedPayments      Payments[]
+  auditLogs             AuditLogs[]
+
+  @@index([hotelId])
+  @@index([username])
+  @@index([departmentId])
+}
+
+model Departments {
+  departmentId          Int         @id @default(autoincrement())
+  hotelId               Int
+  hotel                 Hotels      @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  departmentName        String
+  departmentDescription String?
+  managerId             Int?
+  manager               Employees?  @relation("DepartmentManager", fields: [managerId], references: [employeeId])
+  createdDate           DateTime?   @default(now())
+  createdBy             Int?
+  modifiedDate          DateTime?   @updatedAt
+  modifiedBy            Int?
+
+  employees             Employees[] @relation("EmployeeDepartment")
+}
+
+model Roles {
+  roleId          Int               @id @default(autoincrement())
+  hotelId         Int
+  hotel           Hotels            @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  roleName        String
+  roleDescription String?
+  createdDate     DateTime?         @default(now())
+  createdBy       Int?
+  modifiedDate    DateTime?         @updatedAt
+  modifiedBy      Int?
+
+  employees       Employees[]
+  permissions     RolePermissions[]
+}
+
+model RolePermissions {
+  rolePermissionId Int      @id @default(autoincrement())
+  roleId           Int
+  role             Roles    @relation(fields: [roleId], references: [roleId], onDelete: Cascade)
+  permissionCode   String
+  permissionName   String?
+  canCreate        Boolean? @default(false)
+  canRead          Boolean? @default(false)
+  canUpdate        Boolean? @default(false)
+  canDelete        Boolean? @default(false)
+  createdDate      DateTime? @default(now())
+}
+
+// ---------------------------------------------------------
+// 2. HOTEL OPERATIONS
+// ---------------------------------------------------------
+
+model RoomTypes {
+  roomTypeId      Int       @id @default(autoincrement())
+  hotelId         Int
+  hotel           Hotels    @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  typeName        String
+  typeDescription String?
+  basePrice       Decimal
+  capacity        Int?
+  amenities       String?
+  createdDate     DateTime? @default(now())
+  createdBy       Int?
+  modifiedDate    DateTime? @updatedAt
+  modifiedBy      Int?
+
+  rooms           Rooms[]
+}
+
+model Rooms {
+  roomId               Int            @id @default(autoincrement())
+  hotelId              Int
+  hotel                Hotels         @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  roomTypeId           Int
+  roomType             RoomTypes      @relation(fields: [roomTypeId], references: [roomTypeId])
+  roomNumber           String         @unique
+  floor                Int?
+  roomStatus           String?        @default("Available") // Available, Occupied, Maintenance, Cleaning
+  lastMaintenanceDate  DateTime?
+  nextMaintenanceDate  DateTime?
+  createdDate          DateTime?      @default(now())
+  createdBy            Int?
+  modifiedDate         DateTime?      @updatedAt
+  modifiedBy           Int?
+
+  reservations         Reservations[]
+  orders               Orders[]
+
+  @@index([hotelId])
+  @@index([roomStatus])
+}
+
+model Reservations {
+  reservationId      Int            @id @default(autoincrement())
+  hotelId            Int
+  hotel              Hotels         @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  customerId         Int?
+  customer           Customers?     @relation(fields: [customerId], references: [customerId])
+  roomId             Int
+  room               Rooms          @relation(fields: [roomId], references: [roomId])
+  checkInDate        DateTime
+  checkOutDate       DateTime
+  numberOfGuests     Int?
+  reservationStatus  String?        @default("Confirmed") // Confirmed, CheckedIn, CheckedOut, Cancelled
+  specialRequests    String?
+  bookingDate        DateTime
+  bookedByEmployeeId Int?
+  bookedBy           Employees?     @relation(fields: [bookedByEmployeeId], references: [employeeId])
+  createdDate        DateTime?      @default(now())
+  createdBy          Int?
+  modifiedDate       DateTime?      @updatedAt
+  modifiedBy         Int?
+
+  downPayments       DownPayments[]
+  invoices           Invoices[]
+
+  @@index([hotelId, checkInDate, checkOutDate])
+  @@index([customerId])
+  @@index([roomId])
+}
+
+model DownPayments {
+  downPaymentId Int          @id @default(autoincrement())
+  reservationId Int
+  reservation   Reservations @relation(fields: [reservationId], references: [reservationId], onDelete: Cascade)
+  amount        Decimal
+  paymentMethod String?
+  transactionId String?
+  paymentDate   DateTime?    @default(now())
+  isRefunded    Boolean?     @default(false)
+  refundDate    DateTime?
+  refundReason  String?
+}
+
+// ---------------------------------------------------------
+// 3. FOOD & BEVERAGE
+// ---------------------------------------------------------
+
+model MenuCategories {
+  menuCategoryId      Int         @id @default(autoincrement())
+  hotelId             Int
+  hotel               Hotels      @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  serviceType         String      // 'Restaurant' or 'Bar'
+  categoryName        String
+  categoryDescription String?
+  displayOrder        Int?
+  createdDate         DateTime?   @default(now())
+  createdBy           Int?
+  modifiedDate        DateTime?   @updatedAt
+  modifiedBy          Int?
+
+  menuItems           MenuItems[]
+}
+
+model MenuItems {
+  menuItemId      Int            @id @default(autoincrement())
+  hotelId         Int
+  hotel           Hotels         @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  menuCategoryId  Int
+  category        MenuCategories @relation(fields: [menuCategoryId], references: [menuCategoryId])
+  itemName        String
+  itemDescription String?
+  price           Decimal
+  prepTime        Int?           // minutes
+  isAvailable     Boolean?       @default(true)
+  isVegetarian    Boolean?       @default(false)
+  allergens       String?
+  createdDate     DateTime?      @default(now())
+  createdBy       Int?
+  modifiedDate    DateTime?      @updatedAt
+  modifiedBy      Int?
+
+  orderItems      OrderItems[]
+}
+
+model Orders {
+  orderId              Int          @id @default(autoincrement())
+  hotelId              Int
+  hotel                Hotels       @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  roomId               Int?
+  room                 Rooms?       @relation(fields: [roomId], references: [roomId])
+  serviceType          String       // 'Restaurant' or 'Bar'
+  orderStatus          String?      @default("Pending") // Pending, Preparing, Ready, Served, Cancelled
+  createdByEmployeeId  Int
+  employee             Employees    @relation(fields: [createdByEmployeeId], references: [employeeId])
+  customerId           Int?
+  customer             Customers?   @relation(fields: [customerId], references: [customerId])
+  specialInstructions  String?
+  orderDate            DateTime     @default(now())
+  completionDate       DateTime?
+  createdDate          DateTime?    @default(now())
+  createdBy            Int?
+  modifiedDate         DateTime?    @updatedAt
+  modifiedBy           Int?
+
+  orderItems           OrderItems[]
+
+  @@index([hotelId, orderStatus])
+  @@index([orderDate, serviceType])
+}
+
+model OrderItems {
+  orderItemId         Int       @id @default(autoincrement())
+  orderId             Int
+  order               Orders    @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+  menuItemId          Int
+  menuItem            MenuItems @relation(fields: [menuItemId], references: [menuItemId])
+  quantity            Int
+  unitPrice           Decimal
+  specialInstructions String?
+  itemStatus          String?   @default("Pending") // Pending, Preparing, Ready, Served
+  servedTime          DateTime?
+  createdDate         DateTime? @default(now())
+}
+
+// ---------------------------------------------------------
+// 4. INVENTORY MANAGEMENT
+// ---------------------------------------------------------
+
+model InventoryCategories {
+  inventoryCategoryId Int              @id @default(autoincrement())
+  hotelId             Int
+  hotel               Hotels           @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  categoryName        String
+  categoryDescription String?
+
+  inventoryItems      InventoryItems[]
+}
+
+model Suppliers {
+  supplierId    Int              @id @default(autoincrement())
+  hotelId       Int
+  hotel         Hotels           @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  supplierName  String
+  contactPerson String?
+  phoneNumber   String?
+  email         String?
+  address       String?
+  city          String?
+  country       String?
+  paymentTerms  String?
+  isActive      Boolean?         @default(true)
+  createdDate   DateTime?        @default(now())
+  createdBy     Int?
+  modifiedDate  DateTime?        @updatedAt
+  modifiedBy    Int?
+
+  inventoryItems InventoryItems[]
+}
+
+model InventoryItems {
+  inventoryItemId     Int                 @id @default(autoincrement())
+  hotelId             Int
+  hotel               Hotels              @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  inventoryCategoryId Int
+  category            InventoryCategories @relation(fields: [inventoryCategoryId], references: [inventoryCategoryId])
+  itemName            String
+  sku                 String?             @unique
+  barcode             String?             @unique
+  description         String?
+  unit                String?             // 'Piece', 'Kg', 'Liter', 'Box', etc.
+  currentStock        Decimal             @default(0)
+  reorderLevel        Decimal?
+  maxStock            Decimal?
+  unitCost            Decimal?
+  supplierId          Int?
+  supplier            Suppliers?          @relation(fields: [supplierId], references: [supplierId])
+  expiryDate          DateTime?
+  storageLocation     String?
+  isBarcodeEnabled    Boolean?            @default(false)
+  createdDate         DateTime?           @default(now())
+  createdBy           Int?
+  modifiedDate        DateTime?           @updatedAt
+  modifiedBy          Int?
+
+  transactions        InventoryTransactions[]
+
+  @@index([hotelId])
+  @@index([sku])
+  @@index([barcode])
+  @@index([hotelId, currentStock]) // To support low stock index
+}
+
+model InventoryTransactions {
+  inventoryTransactionId Int            @id @default(autoincrement())
+  hotelId                Int
+  hotel                  Hotels         @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  inventoryItemId        Int
+  inventoryItem          InventoryItems @relation(fields: [inventoryItemId], references: [inventoryItemId])
+  transactionType        String         // 'In', 'Out', 'Adjustment', 'Wastage'
+  quantity               Decimal
+  reference              String?        // OrderID, PurchaseOrderID, etc.
+  notes                  String?
+  createdByEmployeeId    Int
+  employee               Employees      @relation(fields: [createdByEmployeeId], references: [employeeId])
+  createdDate            DateTime?      @default(now())
+
+  @@index([createdDate])
+}
+
+// ---------------------------------------------------------
+// 5. BILLING & PAYMENTS
+// ---------------------------------------------------------
+
+model Invoices {
+  invoiceId           Int                @id @default(autoincrement())
+  hotelId             Int
+  hotel               Hotels             @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  invoiceNumber       String             @unique
+  customerId          Int?
+  customer            Customers?         @relation(fields: [customerId], references: [customerId])
+  reservationId       Int?
+  reservation         Reservations?      @relation(fields: [reservationId], references: [reservationId])
+  invoiceDate         DateTime
+  dueDate             DateTime?
+  subTotal            Decimal?
+  taxAmount           Decimal?
+  discountAmount      Decimal?           @default(0)
+  serviceCharge       Decimal?           @default(0)
+  totalAmount         Decimal?
+  paidAmount          Decimal?           @default(0)
+  paymentStatus       String?            @default("Pending") // Pending, Partial, Paid, Overdue
+  currency            String?            @default("USD")
+  notes               String?
+  createdByEmployeeId Int
+  employee            Employees          @relation(fields: [createdByEmployeeId], references: [employeeId])
+  createdDate         DateTime?          @default(now())
+  createdBy           Int?
+  modifiedDate        DateTime?          @updatedAt
+  modifiedBy          Int?
+
+  lineItems           InvoiceLineItems[]
+  payments            Payments[]
+  loyaltyPoints       LoyaltyPoints[]
+
+  @@index([hotelId, paymentStatus])
+  @@index([invoiceNumber])
+  @@index([customerId, paymentStatus]) // From indexes summary
+}
+
+model InvoiceLineItems {
+  invoiceLineItemId Int      @id @default(autoincrement())
+  invoiceId         Int
+  invoice           Invoices @relation(fields: [invoiceId], references: [invoiceId], onDelete: Cascade)
+  description       String
+  quantity          Decimal?
+  unitPrice         Decimal
+  lineTotal         Decimal
+  lineType          String?  // 'Room', 'Food', 'Drink', 'Service', 'Tax', 'Discount'
+}
+
+model Payments {
+  paymentId             Int       @id @default(autoincrement())
+  hotelId               Int
+  hotel                 Hotels    @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  invoiceId             Int
+  invoice               Invoices  @relation(fields: [invoiceId], references: [invoiceId])
+  paymentDate           DateTime
+  paymentMethod         String?   // 'Cash', 'Credit Card', 'Bank Transfer', 'Mobile Money'
+  amount                Decimal
+  currency              String?   @default("USD")
+  referenceNumber       String?
+  receivedByEmployeeId  Int
+  employee              Employees @relation(fields: [receivedByEmployeeId], references: [employeeId])
+  notes                 String?
+  createdDate           DateTime? @default(now())
+  createdBy             Int?
+  modifiedDate          DateTime? @updatedAt
+  modifiedBy            Int?
+
+  @@index([paymentDate])
+}
+
+// ---------------------------------------------------------
+// 6. CUSTOMER MANAGEMENT
+// ---------------------------------------------------------
+
+model Customers {
+  customerId        Int                   @id @default(autoincrement())
+  hotelId           Int
+  hotel             Hotels                @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  firstName         String
+  lastName          String
+  email             String?
+  phoneNumber       String?
+  country           String?
+  city              String?
+  address           String?
+  dateOfBirth       DateTime?
+  gender            String?
+  preferredLanguage String?
+  customerTier      String?               @default("Regular") // VIP, Regular, Occasional
+  totalSpent        Decimal?              @default(0)
+  loyaltyPoints     Int?                  @default(0)
+  lastVisitDate     DateTime?
+  createdDate       DateTime?             @default(now())
+  createdBy         Int?
+  modifiedDate      DateTime?             @updatedAt
+  modifiedBy        Int?
+
+  preferences       CustomerPreferences[]
+  loyaltyHistory    LoyaltyPoints[]
+  reservations      Reservations[]
+  orders            Orders[]
+  invoices          Invoices[]
+
+  @@index([hotelId])
+  @@index([email])
+}
+
+model CustomerPreferences {
+  customerPreferenceId Int       @id @default(autoincrement())
+  customerId           Int
+  customer             Customers @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
+  preferenceType       String?
+  preferenceValue      String?
+}
+
+model LoyaltyPoints {
+  loyaltyPointId   Int       @id @default(autoincrement())
+  hotelId          Int
+  hotel            Hotels    @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  customerId       Int
+  customer         Customers @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
+  pointsEarned     Int?
+  pointsRedeemed   Int?      @default(0)
+  transactionDate  DateTime
+  expiryDate       DateTime?
+  source           String?   // 'Purchase', 'Bonus', 'Referral'
+  relatedInvoiceId Int?
+  invoice          Invoices? @relation(fields: [relatedInvoiceId], references: [invoiceId])
+  notes            String?
+}
+
+// ---------------------------------------------------------
+// 7. AUDIT & COMPLIANCE
+// ---------------------------------------------------------
+
+model AuditLogs {
+  auditLogId          Int       @id @default(autoincrement())
+  hotelId             Int
+  hotel               Hotels    @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  tableName           String
+  recordId            Int?
+  actionType          String    // 'INSERT', 'UPDATE', 'DELETE'
+  actionByEmployeeId  Int
+  employee            Employees @relation(fields: [actionByEmployeeId], references: [employeeId])
+  actionDate          DateTime  @default(now())
+  columnName          String?
+  oldValue            String?
+  newValue            String?
+  changeReason        String?
+  ipAddress           String?
+  applicationVersion  String?
+
+  @@index([hotelId, actionDate])
+  @@index([actionByEmployeeId])
+}
+
+// ---------------------------------------------------------
+// 8. SYSTEM CONFIGURATION
+// ---------------------------------------------------------
+
+model HotelSettings {
+  hotelSettingId  Int       @id @default(autoincrement())
+  hotelId         Int
+  hotel           Hotels    @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  settingKey      String
+  settingValue    String?
+  settingType     String?   // 'string', 'int', 'boolean', 'decimal'
+  description     String?
+  isSystemSetting Boolean?  @default(false)
+  createdDate     DateTime? @default(now())
+  modifiedDate    DateTime? @updatedAt
+}
+
+model PrinterConfiguration {
+  printerConfigId Int       @id @default(autoincrement())
+  hotelId         Int
+  hotel           Hotels    @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  printerName     String
+  printerType     String?   // 'Thermal', 'Regular'
+  printerModel    String?
+  networkAddress  String?
+  port            Int?
+  isDefault       Boolean?  @default(false)
+  isActive        Boolean?  @default(true)
+  createdDate     DateTime? @default(now())
+  modifiedDate    DateTime? @updatedAt
+}
+
+model LanguageSettings {
+  languageSettingId Int       @id @default(autoincrement())
+  hotelId           Int
+  hotel             Hotels    @relation(fields: [hotelId], references: [hotelId], onDelete: Cascade)
+  languageCode      String
+  languageName      String?
+  isDefault         Boolean?  @default(false)
+  isActive          Boolean?  @default(true)
+  createdDate       DateTime? @default(now())
+}

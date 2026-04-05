@@ -1,0 +1,10 @@
+CREATE TABLE Roles (
+    RoleID SERIAL PRIMARY KEY,
+    HotelID INT NOT NULL REFERENCES Hotels(HotelID) ON DELETE CASCADE,
+    RoleName VARCHAR(100) NOT NULL,
+    RoleDescription VARCHAR(500),
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy INT,
+    ModifiedDate TIMESTAMP,
+    ModifiedBy INT
+);
